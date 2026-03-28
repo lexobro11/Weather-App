@@ -5,105 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weather App UI</title>
+    <link rel="stylesheet" href="style.css">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#60A5FA",
-                        secondary: "#38BDF8",
-                        card: "rgba(15, 23, 42, 0.65)",
-                        stroke: "rgba(255,255,255,0.08)"
-                    },
-                    boxShadow: {
-                        glow: "0 0 80px rgba(56, 189, 248, 0.15)",
-                        soft: "0 10px 30px rgba(0,0,0,0.25)"
-                    },
-                    keyframes: {
-                        floaty: {
-                            "0%, 100%": { transform: "translateY(0px)" },
-                            "50%": { transform: "translateY(-8px)" }
-                        },
-                        pulseGlow: {
-                            "0%, 100%": { opacity: 0.5, transform: "scale(1)" },
-                            "50%": { opacity: 0.8, transform: "scale(1.05)" }
-                        },
-                        slideUp: {
-                            "0%": { opacity: 0, transform: "translateY(20px)" },
-                            "100%": { opacity: 1, transform: "translateY(0)" }
-                        },
-                        shimmer: {
-                            "0%": { backgroundPosition: "-200% 0" },
-                            "100%": { backgroundPosition: "200% 0" }
-                        }
-                    },
-                    animation: {
-                        floaty: "floaty 5s ease-in-out infinite",
-                        pulseGlow: "pulseGlow 6s ease-in-out infinite",
-                        slideUp: "slideUp 0.7s ease forwards",
-                        shimmer: "shimmer 2.5s linear infinite"
-                    },
-                    backdropBlur: {
-                        xs: "2px"
-                    }
-                }
-            }
-        };
-    </script>
-
-    <style>
-        .glass {
-            background: rgba(15, 23, 42, 0.58);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Custom horizontal scrollbar for hourly forecast */
-        #hourlyContainer::-webkit-scrollbar {
-            height: 10px;
-        }
-
-        #hourlyContainer::-webkit-scrollbar-track {
-            background: rgba(148, 163, 184, 0.18);
-            border-radius: 9999px;
-        }
-
-        #hourlyContainer::-webkit-scrollbar-thumb {
-            background: rgba(56, 189, 248, 0.45);
-            border-radius: 9999px;
-            border: 2px solid rgba(15, 23, 42, 0.35);
-        }
-
-        #hourlyContainer::-webkit-scrollbar-thumb:hover {
-            background: rgba(56, 189, 248, 0.8);
-        }
-
-        #hourlyContainer {
-            scrollbar-color: rgba(56, 189, 248, 0.45) rgba(148, 163, 184, 0.18);
-            scrollbar-width: thin;
-        }
-
-        .bg-grid {
-            background-image:
-                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
-            background-size: 24px 24px;
-        }
-    </style>
 </head>
 
 <body class="min-h-screen bg-slate-950 text-white overflow-x-hidden">
@@ -294,5 +199,3 @@
 </body>
 
 </html>
-
-<!-- 2bf31856e78943a7b04105355262503 -->

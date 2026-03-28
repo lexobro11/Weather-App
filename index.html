@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App UI</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#60A5FA",
+                        secondary: "#38BDF8",
+                        card: "rgba(15, 23, 42, 0.65)",
+                        stroke: "rgba(255,255,255,0.08)"
+                    },
+                    boxShadow: {
+                        glow: "0 0 80px rgba(56, 189, 248, 0.15)",
+                        soft: "0 10px 30px rgba(0,0,0,0.25)"
+                    },
+                    keyframes: {
+                        floaty: {
+                            "0%, 100%": { transform: "translateY(0px)" },
+                            "50%": { transform: "translateY(-8px)" }
+                        },
+                        pulseGlow: {
+                            "0%, 100%": { opacity: 0.5, transform: "scale(1)" },
+                            "50%": { opacity: 0.8, transform: "scale(1.05)" }
+                        },
+                        slideUp: {
+                            "0%": { opacity: 0, transform: "translateY(20px)" },
+                            "100%": { opacity: 1, transform: "translateY(0)" }
+                        },
+                        shimmer: {
+                            "0%": { backgroundPosition: "-200% 0" },
+                            "100%": { backgroundPosition: "200% 0" }
+                        }
+                    },
+                    animation: {
+                        floaty: "floaty 5s ease-in-out infinite",
+                        pulseGlow: "pulseGlow 6s ease-in-out infinite",
+                        slideUp: "slideUp 0.7s ease forwards",
+                        shimmer: "shimmer 2.5s linear infinite"
+                    },
+                    backdropBlur: {
+                        xs: "2px"
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        .glass {
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom horizontal scrollbar for hourly forecast */
+        #hourlyContainer::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        #hourlyContainer::-webkit-scrollbar-track {
+            background: rgba(148, 163, 184, 0.18);
+            border-radius: 9999px;
+        }
+
+        #hourlyContainer::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.45);
+            border-radius: 9999px;
+            border: 2px solid rgba(15, 23, 42, 0.35);
+        }
+
+        #hourlyContainer::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 189, 248, 0.8);
+        }
+
+        #hourlyContainer {
+            scrollbar-color: rgba(56, 189, 248, 0.45) rgba(148, 163, 184, 0.18);
+            scrollbar-width: thin;
+        }
+
+        .bg-grid {
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-white overflow-x-hidden">
+    <!-- Background -->
+    <div class="fixed inset-0 -z-10 overflow-hidden">
+        <div class="absolute top-[-80px] left-[-80px] w-72 h-72 rounded-full bg-sky-500/20 blur-3xl animate-pulseGlow">
+        </div>
+        <div
+            class="absolute bottom-[-100px] right-[-60px] w-80 h-80 rounded-full bg-blue-500/20 blur-3xl animate-pulseGlow">
+        </div>
+        <div class="absolute inset-0 bg-grid opacity-20"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950"></div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <header class="mb-8 animate-slideUp">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
+                        Weather Dashboard
+                    </h1>
+                    <p class="text-slate-400 mt-2">
+                        Current weather, hourly forecast and weekly outlook
+                    </p>
+                </div>
+
+                <!-- Search -->
+                <form id="searchForm" class="w-full lg:w-auto">
+                    <div class="glass rounded-2xl p-2 flex items-center gap-2 shadow-soft">
+                        <input id="searchInput" type="text" placeholder="Search city... e.g. Tashkent"
+                            class="w-full lg:w-80 bg-transparent outline-none px-3 py-3 text-sm text-white placeholder:text-slate-400" />
+                        <button type="submit"
+                            class="px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 transition-all duration-300 font-medium shadow-lg shadow-sky-500/20 hover:scale-[1.03]">
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Left / Main current weather -->
+            <div class="xl:col-span-2 space-y-6">
+                <!-- Current Weather Card -->
+                <div class="glass rounded-3xl p-6 sm:p-8 shadow-soft animate-slideUp">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                        <!-- Left content -->
+                        <div class="space-y-5">
+                            <div>
+                                <p id="locationName" class="text-slate-300 text-sm uppercase tracking-[0.2em]">
+                                    Tashkent, Uzbekistan
+                                </p>
+                                <h2 id="currentCondition" class="text-2xl sm:text-3xl font-semibold mt-2">
+                                    Partly cloudy
+                                </h2>
+                                <p id="localTime" class="text-slate-400 mt-2">
+                                    Local time: 2026-03-25 11:00
+                                </p>
+                            </div>
+
+                            <div class="flex items-end gap-4">
+                                <span id="currentTemp" class="text-6xl sm:text-7xl font-bold leading-none">
+                                    24°
+                                </span>
+                                <span id="feelsLike" class="text-slate-400 pb-2">
+                                    Feels like 26°
+                                </span>
+                            </div>
+
+                            <!-- Current stats -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div
+                                    class="rounded-2xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition">
+                                    <p class="text-slate-400 text-sm">Humidity</p>
+                                    <p id="humidity" class="text-lg font-semibold mt-2">68%</p>
+                                </div>
+                                <div
+                                    class="rounded-2xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition">
+                                    <p class="text-slate-400 text-sm">Wind</p>
+                                    <p id="wind" class="text-lg font-semibold mt-2">12 km/h</p>
+                                </div>
+                                <div
+                                    class="rounded-2xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition">
+                                    <p class="text-slate-400 text-sm">UV Index</p>
+                                    <p id="uv" class="text-lg font-semibold mt-2">4</p>
+                                </div>
+                                <div
+                                    class="rounded-2xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition">
+                                    <p class="text-slate-400 text-sm">Chance of Rain</p>
+                                    <p id="rainChance" class="text-lg font-semibold mt-2">20%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right icon / visual -->
+                        <div class="flex flex-col items-center justify-center text-center">
+                            <div
+                                class="w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-glow animate-floaty">
+                                <img id="currentIcon" src="https://cdn.weatherapi.com/weather/128x128/day/116.png"
+                                    alt="weather icon"
+                                    class="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]" />
+                            </div>
+                            <p id="currentRange" class="text-slate-400 mt-5">
+                                H: 28° / L: 19°
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hourly forecast -->
+                <div class="glass rounded-3xl p-6 shadow-soft animate-slideUp">
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="text-xl font-semibold">Today’s Hourly Forecast</h3>
+                        <span class="text-sm text-slate-400">Next 24 hours</span>
+                    </div>
+
+                    <div id="hourlyContainer" class="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
+                        <!-- Hour Item -->
+                        <div
+                            class="min-w-[110px] rounded-2xl bg-white/5 border border-white/5 p-4 text-center hover:-translate-y-1 transition-all duration-300">
+                            <p class="text-sm text-slate-400">12:00</p>
+                            <img src="https://cdn.weatherapi.com/weather/64x64/day/113.png"
+                                class="w-12 h-12 mx-auto my-3" alt="" />
+                            <p class="text-lg font-semibold">25°</p>
+                            <p class="text-xs text-slate-400 mt-2">10%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right sidebar -->
+            <div class="space-y-6">
+                <!-- Weekly forecast -->
+                <div class="glass rounded-3xl p-6 shadow-soft animate-slideUp">
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="text-xl font-semibold">3-Day Forecast</h3>
+                        <span class="text-sm text-slate-400">Weekly</span>
+                    </div>
+
+                    <div id="weeklyContainer" class="space-y-3">
+                        <!-- Day Row -->
+                        <div
+                            class="flex items-center justify-between rounded-2xl bg-white/5 border border-white/5 px-4 py-3 hover:bg-white/10 transition">
+                            <div class="flex items-center gap-3">
+                                <img src="https://cdn.weatherapi.com/weather/64x64/day/116.png" class="w-10 h-10"
+                                    alt="" />
+                                <div>
+                                    <p class="font-medium">Monday</p>
+                                    <p class="text-xs text-slate-400">Partly cloudy</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">28° / 19°</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra info card -->
+                <div class="glass rounded-3xl p-6 shadow-soft animate-slideUp">
+                    <h3 class="text-xl font-semibold mb-5">Weather Details</h3>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                            <span class="text-slate-400">Pressure</span>
+                            <span id="pressure" class="font-medium">1012 mb</span>
+                        </div>
+                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                            <span class="text-slate-400">Visibility</span>
+                            <span id="visibility" class="font-medium">10 km</span>
+                        </div>
+                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                            <span class="text-slate-400">Cloud</span>
+                            <span id="cloud" class="font-medium">45%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400">Wind Direction</span>
+                            <span id="windDir" class="font-medium">NE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="script.js" type="module"></script>
+</body>
+
+</html>
+
+<!-- 2bf31856e78943a7b04105355262503 -->
